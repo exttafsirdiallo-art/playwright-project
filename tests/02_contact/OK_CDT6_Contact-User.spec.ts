@@ -1,12 +1,8 @@
 import { test, expect } from "@playwright/test";
 import userData from "../data/users.json";
-import fs from "fs";
-import path from "path";
 
-test.describe("TC06 Logout User @contact", () => {
-  test("Test Case 6: Contact Us Form JDD JSON @smoke", async ({
-    page,
-  }, testInfo) => {
+test.describe("TC06 Contact Us Form @contact", () => {
+  test("Test Case 6: Contact Us Form JDD JSON @smoke", async ({ page }) => {
     const u3 = userData.newUser3;
 
     // 1️⃣ Accès HP
@@ -40,13 +36,13 @@ test.describe("TC06 Logout User @contact", () => {
     await page.fill('[data-qa="subject"]', u3.objet);
     await page.fill('[data-qa="message"]', u3.message);
 
-    // 4️⃣ Générer un fichier temporaire et l’uploader (portable CI/local)
-    const tmpFile = path.join(testInfo.outputDir, "contact-upload.txt");
-    await fs.promises.writeFile(
-      tmpFile,
-      "Hello from Playwright (CI safe)\nLine 2"
-    );
-    await page.setInputFiles('input[type="file"]', tmpFile);
+    // 4️⃣ Upload en mémoire (portable CI/local)
+    const content = Buffer.from("Hello from Playwright (CI safe)\nLine 2");
+    await page.setInputFiles('input[type="file"]', {
+      name: "contact-upload.txt",
+      mimeType: "text/plain",
+      buffer: content,
+    });
 
     // 5️⃣ Gérer l’alerte avant Submit
     page.once("dialog", async (d) => {
