@@ -11,38 +11,96 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
+
       - run: npm ci
+
       - run: npx playwright install --with-deps
+
       - run: npx playwright test --project=chromium
 
-      - name: Zip Playwright report
+      - name: Zip Playwright report (max compression)
         if: always()
         run: |
           rm -f playwright-report.zip
-          [ -d "playwright-report" ] && zip -r playwright-report.zip playwright-report || echo "No report dir."
+          if [ -d "playwright-report" ]; then
+            zip -r -9 playwright-report.zip playwright-report
+          else
+            echo "No report dir."
+          fi
 
-      - name: Send report by email
+      # --- OPTION 1: on vérifie la taille du zip et on décide si on joint la PJ ---
+      - name: Check report size
+        id: report_size
         if: always()
+        run: |
+          if [ -f "playwright-report.zip" ]; then
+            BYTES=$(stat -c%s "playwright-report.zip" 2>/dev/null || stat -f%z "playwright-report.zip")
+            echo "bytes=$BYTES" >> "$GITHUB_OUTPUT"
+            if [ "$BYTES" -le 10485760 ]; then   # 10 Mo
+              echo "attach_ok=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "attach_ok=false" >> "$GITHUB_OUTPUT"
+            fi
+          else
+            echo "attach_ok=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      # (facultatif mais utile) Publier quand même le zip en artefact
+      - name: Upload report artifact (zip)
+        if: always() && steps.report_size.outputs.attach_ok == 'false'
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report-zip
+          path: playwright-report.zip
+          if-no-files-found: warn
+
+      # --- ENVOI AVEC PJ si <= 10 Mo ---
+      - name: Send report by email (with attachment)
+        if: always() && steps.report_size.outputs.attach_ok == 'true'
         uses: dawidd6/action-send-mail@v3
         with:
-          # --- Mets ICI tes valeurs en DUR (pas d'expressions) ---
-          server_address: in-v3.mailjet.com # <-- remplace par ton serveur SMTP (ex: smtp.gmail.com)
-          server_port: 587 # <-- 587 = STARTTLS ; si tu utilises 465, mets 465 + secure: true
-          secure: false # <-- true si tu utilises le port 465 (TLS direct)
-          from: "CI <ext.tafsir.diallo@gmail.com>" # <-- ton expéditeur
-          to: "ext.tafsir.diallo@blancheporte.fr" # <-- destinataire(s), séparés par des virgules si plusieurs
-          # --- Secrets sensibles uniquement ici ---
-          username: ${{ secrets.SMTP_USERNAME }}
-          password: ${{ secrets.SMTP_PASSWORD }}
+          # Valeurs non sensibles en clair (OK)
+          server_address: in-v3.mailjet.com
+          server_port: 587
+          secure: false
+          from: "CI <ext.tafsir.diallo@gmail.com>"
+          to: "ext.tafsir.diallo@blancheporte.fr"
           subject: "Playwright – ${{ job.status }} – ${{ github.ref_name }}"
           html_body: |
             <p>Bonjour,</p>
             <p>Rapport Playwright pour la branche <b>${{ github.ref_name }}</b>.</p>
             <p>Statut: <b>${{ job.status }}</b></p>
             <p>Run: <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">ouvrir sur GitHub</a></p>
+            <p>(PJ jointe, taille ≤ 10 Mo)</p>
             <p>Cordialement,<br/>CI</p>
+          # Secrets sensibles ici seulement
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
           attachments: |
             playwright-report.zip
+
+      # --- ENVOI SANS PJ si > 10 Mo (lien vers artefact/run) ---
+      - name: Send report by email (no attachment, too large)
+        if: always() && steps.report_size.outputs.attach_ok == 'false'
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: in-v3.mailjet.com
+          server_port: 587
+          secure: false
+          from: "CI <ext.tafsir.diallo@gmail.com>"
+          to: "ext.tafsir.diallo@blancheporte.fr , ext.tafsir.diallo@gmail.com"
+          subject: "Playwright – ${{ job.status }} – ${{ github.ref_name }}"
+          html_body: |
+            <p>Bonjour,</p>
+            <p>Rapport Playwright pour la branche <b>${{ github.ref_name }}</b>.</p>
+            <p>Statut: <b>${{ job.status }}</b></p>
+            <p>Le rapport est trop volumineux pour être joint (&gt; 10 Mo).</p>
+            <p>➡️ Récupère l’artefact <b>playwright-report-zip</b> dans ce run :</p>
+            <p><a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">ouvrir sur GitHub</a></p>
+            <p>Cordialement,<br/>CI</p>
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}

@@ -8,22 +8,30 @@ export default defineConfig({
   timeout: 90_000,
   expect: { timeout: 10_000 },
   retries: isCI ? 2 : 0,
-  reporter: [["list"], ["html", { open: "never" }]],
 
+  // Reporter léger en CI, verbeux en local
+  reporter: isCI
+    ? [["html", { open: "never" }], ["github"]]
+    : [["list"], ["html", { open: "never" }]],
+
+  // Réduit fortement la taille du zip en CI
   use: {
     baseURL: "https://automationexercise.com",
-    trace: "on-first-retry",
+    trace: isCI ? "retain-on-failure" : "on-first-retry",
     screenshot: "only-on-failure",
-    video: "retain-on-failure",
+    video: isCI ? "off" : "retain-on-failure",
   },
+
+  // (optionnel) Répertoire des artefacts; facile à zipper/ignorer
+  outputDir: "test-results",
 
   projects: [
     {
       name: "chromium",
       use: {
         ...devices["Desktop Chrome"],
-        headless: isCI ? true : false, // 👈 headless en CI uniquement
-        launchOptions: isCI ? {} : { slowMo: 200 }, // 👈 slowMo seulement en local
+        headless: isCI ? true : false,
+        launchOptions: isCI ? {} : { slowMo: 200 },
         channel: "chromium",
       },
     },
