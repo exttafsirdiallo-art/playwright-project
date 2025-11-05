@@ -1,59 +1,48 @@
-name: Playwright Tests
+name: Playwright Tests (with Email)
 
 on:
   push:
     branches: ["main"]
-  pull_request:
-    branches: ["main"]
   workflow_dispatch:
-  schedule:
-    - cron: "0 6 * * *"
 
 jobs:
-  smoke:
-    name: Run Smoke Tests (@smoke)
+  test_and_mail:
     runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - run: npm ci
-      - run: npx playwright install --with-deps
-      - run: npx playwright test --grep "@smoke" --project=chromium
-      - name: Zip smoke report
-        if: always()
-        run: |
-          rm -f playwright-report.zip
-          [ -d "playwright-report" ] && zip -r playwright-report.zip playwright-report || echo "No report dir."
-      - name: Upload smoke report (zip)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-smoke-report-zip
-          path: playwright-report.zip
-          if-no-files-found: warn
 
-  full:
-    name: Run Full Suite
-    needs: smoke
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: 20 }
+        with:
+          node-version: 20
       - run: npm ci
       - run: npx playwright install --with-deps
       - run: npx playwright test --project=chromium
-      - name: Zip full report
+
+      - name: Zip Playwright report
         if: always()
         run: |
           rm -f playwright-report.zip
           [ -d "playwright-report" ] && zip -r playwright-report.zip playwright-report || echo "No report dir."
-      - name: Upload full report (zip)
+
+      - name: Send report by email
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: dawidd6/action-send-mail@v3
         with:
-          name: playwright-full-report-zip
-          path: playwright-report.zip
-          if-no-files-found: warn
+          # --- Mets ICI tes valeurs en DUR (pas d'expressions) ---
+          server_address: in-v3.mailjet.com # <-- remplace par ton serveur SMTP (ex: smtp.gmail.com)
+          server_port: 587 # <-- 587 = STARTTLS ; si tu utilises 465, mets 465 + secure: true
+          secure: false # <-- true si tu utilises le port 465 (TLS direct)
+          from: "CI <ext.tafsir.diallo@gmail.com>" # <-- ton expéditeur
+          to: "ext.tafsir.diallo@blancheporte.fr" # <-- destinataire(s), séparés par des virgules si plusieurs
+          # --- Secrets sensibles uniquement ici ---
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "Playwright – ${{ job.status }} – ${{ github.ref_name }}"
+          html_body: |
+            <p>Bonjour,</p>
+            <p>Rapport Playwright pour la branche <b>${{ github.ref_name }}</b>.</p>
+            <p>Statut: <b>${{ job.status }}</b></p>
+            <p>Run: <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">ouvrir sur GitHub</a></p>
+            <p>Cordialement,<br/>CI</p>
+          attachments: |
+            playwright-report.zip
