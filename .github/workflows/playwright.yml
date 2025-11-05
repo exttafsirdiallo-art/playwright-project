@@ -5,124 +5,55 @@ on:
     branches: ["main"]
   pull_request:
     branches: ["main"]
-  workflow_dispatch: # bouton "Run workflow"
+  workflow_dispatch:
   schedule:
-    - cron: "0 6 * * *" # tous les jours à 06:00 UTC (~07:00/08:00 Europe/Paris)
+    - cron: "0 6 * * *"
 
 jobs:
   smoke:
     name: Run Smoke Tests (@smoke)
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
-
-      - name: Run smoke tests
-        run: npx playwright test --grep "@smoke" --project=chromium
-
-      - name: Upload smoke report (artifact)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-smoke-report
-          path: playwright-report
-
-      - name: Zip Playwright smoke report
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci
+      - run: npx playwright install --with-deps
+      - run: npx playwright test --grep "@smoke" --project=chromium
+      - name: Zip smoke report
         if: always()
         run: |
           rm -f playwright-report.zip
-          zip -r playwright-report.zip playwright-report
-
-      - name: Send smoke report by email
+          [ -d "playwright-report" ] && zip -r playwright-report.zip playwright-report || echo "No report dir."
+      - name: Upload smoke report (zip)
         if: always()
-        uses: dawidd6/action-send-mail@v3
+        uses: actions/upload-artifact@v4
         with:
-          server: ${{ secrets.SMTP_SERVER }}
-          port: ${{ secrets.SMTP_PORT }}
-          secure: false
-          username: ${{ secrets.SMTP_USERNAME }}
-          password: ${{ secrets.SMTP_PASSWORD }}
-          subject: "Playwright – Smoke – ${{ job.status }} – ${{ github.ref_name }}"
-          from: ${{ secrets.MAIL_FROM }}
-          to: ${{ secrets.MAIL_TO }}
-          html_body: |
-            <p>Bonjour,</p>
-            <p>Rapport <b>Smoke</b> Playwright pour la branche <b>${{ github.ref_name }}</b>.</p>
-            <p>Statut: <b>${{ job.status }}</b></p>
-            <p>Run: <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">ouvrir sur GitHub</a></p>
-            <p>Cordialement,</p>
-            <p>CI</p>
-          attachments: |
-            playwright-report.zip
+          name: playwright-smoke-report-zip
+          path: playwright-report.zip
+          if-no-files-found: warn
 
   full:
     name: Run Full Suite
     needs: smoke
-    # Full suite seulement lors d'un push sur main (pas sur PR ni run manuel)
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps
-
-      - name: Run all Playwright tests
-        run: npx playwright test --project=chromium
-
-      - name: Upload full report (artifact)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-full-report
-          path: playwright-report
-
-      - name: Zip Playwright full report
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: { node-version: 20 }
+      - run: npm ci
+      - run: npx playwright install --with-deps
+      - run: npx playwright test --project=chromium
+      - name: Zip full report
         if: always()
         run: |
           rm -f playwright-report.zip
-          zip -r playwright-report.zip playwright-report
-
-      - name: Send full report by email
+          [ -d "playwright-report" ] && zip -r playwright-report.zip playwright-report || echo "No report dir."
+      - name: Upload full report (zip)
         if: always()
-        uses: dawidd6/action-send-mail@v3
+        uses: actions/upload-artifact@v4
         with:
-          server: ${{ secrets.SMTP_SERVER }}
-          port: ${{ secrets.SMTP_PORT }}
-          secure: false
-          username: ${{ secrets.SMTP_USERNAME }}
-          password: ${{ secrets.SMTP_PASSWORD }}
-          subject: "Playwright – Full Suite – ${{ job.status }} – ${{ github.ref_name }}"
-          from: ${{ secrets.MAIL_FROM }}
-          to: ${{ secrets.MAIL_TO }}
-          html_body: |
-            <p>Bonjour,</p>
-            <p>Rapport <b>Full Suite</b> Playwright pour la branche <b>${{ github.ref_name }}</b>.</p>
-            <p>Statut: <b>${{ job.status }}</b></p>
-            <p>Run: <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">ouvrir sur GitHub</a></p>
-            <p>Cordialement,</p>
-            <p>CI</p>
-          attachments: |
-            playwright-report.zip
+          name: playwright-full-report-zip
+          path: playwright-report.zip
+          if-no-files-found: warn
