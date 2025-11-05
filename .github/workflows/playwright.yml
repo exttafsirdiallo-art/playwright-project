@@ -2,15 +2,18 @@ name: Playwright Tests
 
 on:
   push:
-    branches: ["main"] # ou ["**"] pour toutes branches
+    branches: ["main"]
   pull_request:
     branches: ["main"]
-  workflow_dispatch: # <-- permet de lancer manuellement depuis Actions
+  workflow_dispatch: # bouton "Run workflow"
+  schedule:
+    - cron: "0 6 * * *" # tous les jours à 06:00 UTC (~07:00/08:00 Europe/Paris)
 
 jobs:
   smoke:
     name: Run Smoke Tests (@smoke)
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -29,18 +32,48 @@ jobs:
       - name: Run smoke tests
         run: npx playwright test --grep "@smoke" --project=chromium
 
-      - name: Upload smoke report
+      - name: Upload smoke report (artifact)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-smoke-report
           path: playwright-report
 
+      - name: Zip Playwright smoke report
+        if: always()
+        run: |
+          rm -f playwright-report.zip
+          zip -r playwright-report.zip playwright-report
+
+      - name: Send smoke report by email
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server: ${{ secrets.SMTP_SERVER }}
+          port: ${{ secrets.SMTP_PORT }}
+          secure: false
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "Playwright – Smoke – ${{ job.status }} – ${{ github.ref_name }}"
+          from: ${{ secrets.MAIL_FROM }}
+          to: ${{ secrets.MAIL_TO }}
+          html_body: |
+            <p>Bonjour,</p>
+            <p>Rapport <b>Smoke</b> Playwright pour la branche <b>${{ github.ref_name }}</b>.</p>
+            <p>Statut: <b>${{ job.status }}</b></p>
+            <p>Run: <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">ouvrir sur GitHub</a></p>
+            <p>Cordialement,</p>
+            <p>CI</p>
+          attachments: |
+            playwright-report.zip
+
   full:
     name: Run Full Suite
     needs: smoke
+    # Full suite seulement lors d'un push sur main (pas sur PR ni run manuel)
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -59,9 +92,37 @@ jobs:
       - name: Run all Playwright tests
         run: npx playwright test --project=chromium
 
-      - name: Upload full report
+      - name: Upload full report (artifact)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-full-report
           path: playwright-report
+
+      - name: Zip Playwright full report
+        if: always()
+        run: |
+          rm -f playwright-report.zip
+          zip -r playwright-report.zip playwright-report
+
+      - name: Send full report by email
+        if: always()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server: ${{ secrets.SMTP_SERVER }}
+          port: ${{ secrets.SMTP_PORT }}
+          secure: false
+          username: ${{ secrets.SMTP_USERNAME }}
+          password: ${{ secrets.SMTP_PASSWORD }}
+          subject: "Playwright – Full Suite – ${{ job.status }} – ${{ github.ref_name }}"
+          from: ${{ secrets.MAIL_FROM }}
+          to: ${{ secrets.MAIL_TO }}
+          html_body: |
+            <p>Bonjour,</p>
+            <p>Rapport <b>Full Suite</b> Playwright pour la branche <b>${{ github.ref_name }}</b>.</p>
+            <p>Statut: <b>${{ job.status }}</b></p>
+            <p>Run: <a href="https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}">ouvrir sur GitHub</a></p>
+            <p>Cordialement,</p>
+            <p>CI</p>
+          attachments: |
+            playwright-report.zip
