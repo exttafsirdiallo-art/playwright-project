@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import userData from "../data/users.json";
 
 // toujours créer le compte manuellement avant
-test.describe("TC03 Login User with incorrect email @auth", () => {
+test.describe("TC03 Login User with incorrect email @auth @smoke", () => {
   test("Test Case 3: Login User with incorrect email and password", async ({
     page,
   }) => {

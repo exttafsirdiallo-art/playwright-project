@@ -22,7 +22,7 @@ console.log(email);
 console.log(`${address}, ${city}, ${state} ${zipCode}`);
 console.log(phone);
 
-test.describe("TC01 Register User @auth", () => {
+test.describe("TC01 Register User @auth @smoke", () => {
   test("Test Case 1: Register User faker", async ({ page }) => {
     const u = userData.newUser;
 

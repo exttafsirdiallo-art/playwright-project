@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 // toujours créer le compte manuellement avant
-test.describe("TC17 Remove Products From Cart @cart_checkout", () => {
+test.describe("TC17 Remove Products From Cart @cart_checkout @smoke", () => {
   test("Test Case 17: Remove Products From Cart", async ({ page }) => {
     // 1️⃣ Accède à la page d’accueil
     await page.goto("https://automationexercise.com", {

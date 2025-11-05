@@ -3,7 +3,7 @@ import userData from "../data/users.json";
 import { Page } from "@playwright/test";
 
 // toujours créer le compte manuellement avant
-test.describe("TC10 Verify Subscription in home page @subscription", () => {
+test.describe("TC10 Verify Subscription in home page @subscription @smoke", () => {
   test("Test Case 10: Verify Subscription in home page JDD JSON", async ({
     page,
   }) => {

@@ -1,6 +1,6 @@
 import { test, expect } from "@playwright/test";
 
-test.describe("TC18 View Category Products @catalog", () => {
+test.describe("TC18 View Category Products @catalog @smoke", () => {
   test("Test Case 18: View Category Products", async ({ page }) => {
     // 1️⃣ Accède à la page d’accueil
     await page.goto("https://automationexercise.com", {

@@ -19,7 +19,7 @@ import {
 } from "../data/faker-data.ts";
 
 // toujours créer le compte manuellement avant
-test.describe("TC23: Verify address details in checkout page @cart_checkout", () => {
+test.describe("TC23: Verify address details in checkout page @cart_checkout @smoke", () => {
   test("Test Case 23: Verify address details in checkout page JDD faker et JSON", async ({
     page,
   }) => {

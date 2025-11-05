@@ -19,7 +19,7 @@ import {
 } from "../data/faker-data.ts";
 
 // toujours créer le compte manuellement avant
-test.describe("TC14 Place Order: Register while Checkout @cart_checkout", () => {
+test.describe("TC14 Place Order: Register while Checkout @cart_checkout @smoke", () => {
   test("Test Case 14: Place Order: Register while Checkout JDD faker", async ({
     page,
   }) => {

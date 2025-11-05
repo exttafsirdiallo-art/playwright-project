@@ -3,7 +3,7 @@ import userData from "../data/users.json";
 import { Page } from "@playwright/test";
 
 // toujours créer le compte manuellement avant
-test.describe("TC07 Logout User @navigation", () => {
+test.describe("TC07 Logout User @navigation @smoke", () => {
   test("Test Case 7: Verify Test Cases Page ", async ({ page }) => {
     // 1️⃣ Accède à la page d’accueil
     await page.goto("https://automationexercise.com", {

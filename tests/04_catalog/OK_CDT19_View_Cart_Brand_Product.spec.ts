@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import userData from "../data/users.json";
 import { Page } from "@playwright/test";
 
-test.describe("TC19 View & Cart Brand Products @catalog", () => {
+test.describe("TC19 View & Cart Brand Products @catalog @smoke", () => {
   test("Test Case 19: View & Cart Brand Products", async ({ page }) => {
     const u3 = userData.newUser3;
 

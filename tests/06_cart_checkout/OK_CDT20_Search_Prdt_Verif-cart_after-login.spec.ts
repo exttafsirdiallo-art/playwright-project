@@ -3,7 +3,7 @@ import userData from "../data/users.json";
 import { Page } from "@playwright/test";
 
 // toujours créer le compte manuellement avant
-test.describe("TC20: Search Products and Verify Cart After Login @cart_checkout", () => {
+test.describe("TC20: Search Products and Verify Cart After Login @cart_checkout @smoke", () => {
   test("Test Case 20: Search Products and Verify Cart After Login", async ({
     page,
   }) => {

@@ -19,7 +19,7 @@ import {
 } from "../data/faker-data.ts";
 
 // toujours créer le compte manuellement avant
-test.describe("TC24: Download Invoice after purchase order @cart_checkout", () => {
+test.describe("TC24: Download Invoice after purchase order @cart_checkout @smoke", () => {
   test("Test Case 24: Download Invoice after purchase order JDD faker", async ({
     page,
   }) => {

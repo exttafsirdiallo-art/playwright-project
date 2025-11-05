@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import userData from "../data/users.json";
 
 // toujours créer le compte manuellement avant
-test.describe("TC04 Logout User @auth", () => {
+test.describe("TC04 Logout User @auth @smoke", () => {
   test("Test Case 4: Logout User JDD JSON", async ({ page }) => {
     const u5 = userData.newUser5;
 

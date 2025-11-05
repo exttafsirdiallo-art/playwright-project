@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 // toujours créer le compte manuellement avant
-test.describe("TC13 Verify Product quantity in Cart @cart_checkout", () => {
+test.describe("TC13 Verify Product quantity in Cart @cart_checkout @smoke", () => {
   test("Test Case 13: Verify Product quantity in Cart", async ({ page }) => {
     // 1️⃣ Accède à la page d’accueil
     await page.goto("https://automationexercise.com", {

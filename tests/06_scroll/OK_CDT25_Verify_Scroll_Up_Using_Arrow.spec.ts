@@ -3,7 +3,7 @@ import userData from "../data/users.json";
 import { Page } from "@playwright/test";
 
 // toujours créer le compte manuellement avant
-test.describe("TC25: Verify Scroll Up using 'Arrow' button and Scroll Down functionality @scroll", () => {
+test.describe("TC25: Verify Scroll Up using 'Arrow' button and Scroll Down functionality @scroll @smoke", () => {
   test("Test Case 25: Verify Scroll Up using 'Arrow' button and Scroll Down functionality", async ({
     page,
   }) => {

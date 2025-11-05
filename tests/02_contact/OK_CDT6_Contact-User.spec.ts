@@ -4,7 +4,7 @@ import { Page } from "@playwright/test";
 
 // toujours créer le compte manuellement avant
 test.describe("TC06 Logout User @contact", () => {
-  test("Test Case 6: Contact Us Form JDD JSON", async ({ page }) => {
+  test("Test Case 6: Contact Us Form JDD JSON @smoke", async ({ page }) => {
     const u3 = userData.newUser3;
 
     // 1️⃣ Accède à la page d’accueil

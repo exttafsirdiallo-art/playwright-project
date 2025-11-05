@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import userData from "../data/users.json";
 
 // toujours créer le compte manuellement avant
-test.describe("TC16 Login Place Order: Register before Checkout @cart_checkout", () => {
+test.describe("TC16 Login Place Order: Register before Checkout @cart_checkout @smoke", () => {
   test("Test Case 16: Place Order: Login before Checkout JDD JSON", async ({
     page,
   }) => {

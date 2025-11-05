@@ -3,7 +3,7 @@ import userData from "../data/users.json";
 import { Page } from "@playwright/test";
 
 // toujours créer le compte manuellement avant
-test.describe("TC21 Add review on product @catalog", () => {
+test.describe("TC21 Add review on product @catalog @smoke", () => {
   test("Test Case 21: Add review on product", async ({ page }) => {
     const u3 = userData.newUser3;
 

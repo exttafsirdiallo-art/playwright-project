@@ -1,7 +1,7 @@
 import { test, expect } from "@playwright/test";
 
 // toujours créer le compte manuellement avant
-test.describe("TC26: Verify Scroll Up using 'Arrow' button and Scroll Down functionality @scroll", () => {
+test.describe("TC26: Verify Scroll Up using 'Arrow' button and Scroll Down functionality @scroll @smoke", () => {
   test("Test Case 26: Verify Scroll Up using 'Arrow' button and Scroll Down functionality", async ({
     page,
   }) => {

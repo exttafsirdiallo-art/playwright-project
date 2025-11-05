@@ -2,7 +2,7 @@ import { test, expect } from "@playwright/test";
 import userData from "../data/users.json";
 
 // toujours créer le compte manuellement avant
-test.describe("TC05 Register User with existing email @auth", () => {
+test.describe("TC05 Register User with existing email @auth @smoke", () => {
   test("Test Case 5: Register User with existing email JDD JSON @auth", async ({
     page,
   }) => {
